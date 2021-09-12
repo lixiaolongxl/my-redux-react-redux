@@ -1,70 +1,165 @@
-# Getting Started with Create React App
+# 手动实现手动实现 redux react-redux
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## redux
 
-## Available Scripts
+```js
+export function createStore(reducer, enhancer) {
+  if (enhancer) {
+    return enhancer(createStore)(reducer);
+  }
 
-In the project directory, you can run:
+  let currentState = undefined;
+  let currentListeners = [];
+  currentState = reducer(currentState, { type: "INIT" });
 
-### `yarn start`
+  function getState() {
+    return currentState;
+  }
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+  function subscribe(fun) {
+    currentListeners.push(fun);
+  }
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+  function dispatch(action) {
+    currentState = reducer(currentState, action);
+    currentListeners.map((item) => item());
+  }
+  return {
+    getState,
+    subscribe,
+    dispatch,
+  };
+}
+export function hoc(createStore) {
+  return function (reducer) {
+    let result = createStore(reducer);
+    let dispatch = function (action) {
+      if (typeof action === "function") {
+        action(result.dispatch);
+      } else {
+        result.dispatch(action);
+      }
+    };
+    return { ...result, dispatch };
+  };
+}
 
-### `yarn test`
+export function compost(...funs) {
+  if (funs.length === 0) {
+    return (arg) => arg;
+  }
+  if (funs.length === 1) {
+    return funs[0];
+  }
+  return funs.reduce(
+    (a, b) =>
+      (...args) =>
+        a(b(...args))
+  );
+}
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+export function bindActionCreators(actionCreators, dispatch) {
+  if (typeof actionCreators === "object") {
+    function bindActionCreator(actionCreator, dispatch) {
+      return (...args) => dispatch(actionCreator(...args));
+    }
+    const keys = Object.keys(actionCreators);
+    const boundActionCreators = {};
+    keys.forEach((key) => {
+      boundActionCreators[key] = bindActionCreator(
+        actionCreators[key],
+        dispatch
+      );
+    });
+    return boundActionCreators;
+  }
+  throw new Error("第一个参数必须为 object");
+}
+```
+### react-redux
 
-### `yarn build`
+```js
+import React, { Component } from 'react';
+import { bindActionCreators } from './redux'
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+const MyContext = React.createContext(null);
+/**
+ * @Description Provider 传store
+ * @Author Aaron
+ * @Date 2021/09/11 20:29:21
+ * @param { Boolean }
+ * @return { Boolean }
+ */
+export class Provider extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {}
+    }
+    render() {
+        return (
+            <MyContext.Provider value={this.props.store}>
+                {this.props.children}
+            </MyContext.Provider>
+        );
+    }
+}
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+/**
+ * @Description connect
+ * @Author Aaron
+ * @Date 2021/09/11 20:28:53
+ * @param { mapStateToProps ,mapDispatchToProps}
+ * @return { WrapperComponent }
+ */
+export const connect = (mapStateToProps, mapDispatchToProps) => (WrapperComponent) => {
+    return class extends Component {
+        constructor(props) {
+            super(props);
+            this.state = {
+                props: {}
+            }
+        }
+        static contextType = MyContext;
+        componentDidMount() {
+            console.log(this.context);
+            const { subscribe } = this.context
+            this.update()
+            subscribe(() => {
+                this.update()
+            })
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+        }
+        update() {
+            const { getState, dispatch } = this.context
+            let stateToProps = mapStateToProps(getState())
+            let dispatchToProps = null;
 
-### `yarn eject`
+            switch (typeof mapDispatchToProps) {
+                case 'function':
+                    dispatchToProps = mapDispatchToProps(dispatch);
+                    break;
+                case 'object':
+                    dispatchToProps = bindActionCreators(mapDispatchToProps, dispatch);
+                    break;
+                default:
+                    dispatchToProps = { dispatch }
+                    break;
+            }
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+            this.setState({
+                props: { ...stateToProps, ...dispatchToProps }
+            })
+            
+        }
+        render() {
+            return (
+                // <MyContext.Consumer>
+                //     {theme => <WrapperComponent {...props} theme={theme} />}
+                // </MyContext.Consumer>
+                <WrapperComponent {...this.state.props} />
+            );
+        }
+    }
+}
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```

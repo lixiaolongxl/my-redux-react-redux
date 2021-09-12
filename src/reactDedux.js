@@ -13,6 +13,7 @@ export class Provider extends Component {
     constructor(props) {
         super(props);
         this.state = {}
+        
     }
     render() {
         return (
@@ -68,6 +69,7 @@ export const connect = (mapStateToProps, mapDispatchToProps) => (WrapperComponen
             this.setState({
                 props: { ...stateToProps, ...dispatchToProps }
             })
+        
         }
         render() {
             return (
