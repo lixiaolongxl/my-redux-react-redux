@@ -4,6 +4,8 @@ import { connect } from '../reactDedux'
 // import { bindActionCreators } from 'redux'
 import { bindActionCreators } from '../redux'
 import { incAction, decAction } from '../store/actionCreators'
+import { v4 as uuidv4 } from 'uuid';
+
 // import store from '../store';
 class About extends Component {
     constructor(props) {
@@ -34,12 +36,13 @@ class About extends Component {
         // store.dispatch({ type: 'DECREMENT' })
     }
     render() {
-        console.log(this.props);
+        // console.log(this.props);
 
         const { counter, INCREMENT, DECREMENT } = this.props
         return (
             <div class="container mx-auto px-4 select-none">
                 bumber {counter}
+                <div>{uuidv4()}</div>
                 <br />
                 {/* <button onClick={this.ADD_NUMBER}>ADD_NUMBER</button>
                 <button onClick={this.SUB_NUMBER}>SUB_NUMBER</button> */}
