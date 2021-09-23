@@ -40,14 +40,14 @@ class About extends Component {
 
         const { counter, INCREMENT, DECREMENT } = this.props
         return (
-            <div class="container mx-auto px-4 select-none">
+            <div className="container mx-auto px-4 select-none">
                 bumber {counter}
                 <div>{uuidv4()}</div>
                 <br />
                 {/* <button onClick={this.ADD_NUMBER}>ADD_NUMBER</button>
                 <button onClick={this.SUB_NUMBER}>SUB_NUMBER</button> */}
-                <button class="group relative  flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onClick={INCREMENT}>INCREMENT</button>
-                <button class="group relative  flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onClick={DECREMENT}>DECREMENT</button>
+                <button className="group relative  flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onClick={INCREMENT}>INCREMENT</button>
+                <button className="group relative  flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onClick={DECREMENT}>DECREMENT</button>
             </div>
         );
     }
