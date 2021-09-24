@@ -19,7 +19,7 @@ class APP extends Component {
         <HashRouter>
           <Switch>
             <Route path={'/about'} component={About} />
-            <Route path={'/home'} component={Home} />
+            <Route path={'/home'} component={Error} />
             <Redirect exact to="/about" from="/" />
             <Route component={Error} />
           </Switch>
